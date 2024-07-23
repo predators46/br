@@ -20,7 +20,7 @@ AC_CANONICAL_SYSTEM
 # TAR files, the path name is split into two parts, a 155 chacater
 # first part and a 100 character second part.
 AM_INIT_AUTOMAKE([1.9 tar-ustar])
-AC_PROG_LIBTOOL
+LT_INIT
 
 AC_CONFIG_HEADERS([include/config.h])
 
