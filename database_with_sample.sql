@@ -410,7 +410,9 @@ CREATE TABLE `radacct` (
   `nasportid` varchar(15) DEFAULT NULL,
   `nasporttype` varchar(32) DEFAULT NULL,
   `acctstarttime` datetime DEFAULT NULL,
+  `acctupdatetime` datetime DEFAULT NULL,
   `acctstoptime` datetime DEFAULT NULL,
+  `acctinterval` int(12) DEFAULT NULL,
   `acctsessiontime` int(12) DEFAULT NULL,
   `acctauthentic` varchar(32) DEFAULT NULL,
   `connectinfo_start` varchar(50) DEFAULT NULL,
@@ -423,15 +425,24 @@ CREATE TABLE `radacct` (
   `servicetype` varchar(32) DEFAULT NULL,
   `framedprotocol` varchar(32) DEFAULT NULL,
   `framedipaddress` varchar(15) NOT NULL DEFAULT '',
+  `framedipv6address` varchar(45) NOT NULL DEFAULT '',
+  `framedipv6prefix` varchar(45) NOT NULL DEFAULT '',
+  `framedinterfaceid` varchar(44) NOT NULL DEFAULT '',
+  `delegatedipv6prefix` varchar(45) NOT NULL DEFAULT '',
   `acctstartdelay` int(12) DEFAULT NULL,
   `acctstopdelay` int(12) DEFAULT NULL,
   `xascendsessionsvrkey` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`radacctid`),
   KEY `username` (`username`),
   KEY `framedipaddress` (`framedipaddress`),
+  KEY `framedipv6address` (`framedipv6address`),
+  KEY `framedipv6prefix` (`framedipv6prefix`),
+  KEY `framedinterfaceid` (`framedinterfaceid`),
+  KEY `delegatedipv6prefix` (`delegatedipv6prefix`),
   KEY `acctsessionid` (`acctsessionid`),
   KEY `acctuniqueid` (`acctuniqueid`),
   KEY `acctstarttime` (`acctstarttime`),
+  KEY `acctinterval` (`acctinterval`),
   KEY `acctstoptime` (`acctstoptime`),
   KEY `nasipaddress` (`nasipaddress`)
 ) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=latin1;
@@ -443,7 +454,6 @@ CREATE TABLE `radacct` (
 
 LOCK TABLES `radacct` WRITE;
 /*!40000 ALTER TABLE `radacct` DISABLE KEYS */;
-INSERT INTO `radacct` VALUES (8,'4ad2b83900000000','d4cb615e5aca3202','08-00-27-02-31-64','','','0.0.0.0','0','Wireless-802.11','2009-10-12 12:01:45','2009-10-12 12:02:30',45,'','','',34725,293327,'08-00-27-D2-C9-84','08-00-27-02-31-64','Lost-Carrier','','','192.168.182.3',0,0,''),(9,'4ad2b8b500000000','da22abb0ce17a5fa','08-00-27-02-31-64','','','0.0.0.0','0','Wireless-802.11','2009-10-12 12:03:49','2009-10-12 12:25:36',1307,'','','',101684,201401,'08-00-27-D2-C9-84','08-00-27-02-31-64','Idle-Timeout','','','192.168.182.6',0,0,''),(10,'4adbdcb000000000','4500e517a52b8912','08-00-27-02-31-64','','','0.0.0.0','0','Wireless-802.11','2009-10-19 10:27:44','2009-10-19 10:52:22',1478,'','','',46050,342791,'08-00-27-D2-C9-84','08-00-27-02-31-64','Idle-Timeout','','','192.168.182.3',0,0,'');
 /*!40000 ALTER TABLE `radacct` ENABLE KEYS */;
 UNLOCK TABLES;
 
