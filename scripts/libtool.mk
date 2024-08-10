@@ -38,6 +38,13 @@ ifeq "${LIBTOOL}" "JLIBTOOL"
     # Pass compiler and ranlib paths through to jlibtool if they're
     # defined in the environment.  This lets us define a separate
     # compiler to build the toolchain and
+    
+    ifndef BUILD_CC
+        ifdef CC
+            BUILD_CC := '${HOSTCC}'
+        endif
+    endif
+    
     ifdef BUILD_CC
         JLIBTOOL_DEFS += -DBUILD_CC=\"${BUILD_CC}\" -DHOST_LINK_C=\"${BUILD_CC}\"
     endif
