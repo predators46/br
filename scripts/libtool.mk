@@ -74,8 +74,8 @@ ifeq "${LIBTOOL}" "JLIBTOOL"
     # binary!
     ${JLIBTOOL}: ${top_makedir}/jlibtool.c
 	$(Q)mkdir -p $(dir $@)
-	$(Q)echo CC jlibtool.c
-	$(Q)${BUILD_CC} $< -g3 -o $@ ${JLIBTOOL_DEFS}
+	$(Q)echo HOSTCC jlibtool.c
+	$(Q)${HOSTCC} $< -g3 -o $@ ${JLIBTOOL_DEFS}
 
     jlibtool: ${JLIBTOOL}
 
