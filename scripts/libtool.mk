@@ -105,14 +105,14 @@ LIBTOOL_VERBOSE=$(if ${VERBOSE},--debug,--silent)
 
 OBJ_EXT = lo
 
-COMPILE.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=compile ${TARGET_CC}
-HOST_COMPILE.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --mode=compile ${BUILD_CC}
+COMPILE.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=compile -shared ${TARGET_CC}
+HOST_COMPILE.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --mode=compile -shared ${BUILD_CC}
 
-LINK.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=link ${TARGET_CC}
-HOST_LINK.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --mode=link ${BUILD_CC}
+LINK.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=link -shared ${TARGET_CC}
+HOST_LINK.c = ${LIBTOOL} ${LIBTOOL_VERBOSE} --mode=link -shared ${BUILD_CC}
 
-COMPILE.cxx = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=compile ${CXX}
-LINK.cxx = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=link ${CXX}
+COMPILE.cxx = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=compile -shared ${CXX}
+LINK.cxx = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=link -shared ${CXX}
 
 PROGRAM_INSTALL = ${LIBTOOL} ${LIBTOOL_VERBOSE} --target=${TARGET_SYSTEM} --mode=install ${INSTALL}
 

@@ -80,7 +80,7 @@ typedef struct {
 
 #ifndef BUILD_RANLIB
 #  if !defined(__EMX__) && !defined(_OSD_POSIX)
-#    define BUILD_RANLIB			"ranlib"
+#    define BUILD_RANLIB			"true"
 #  endif
 #endif
 
@@ -101,7 +101,7 @@ typedef struct {
 #endif
 
 #ifndef TARGET_RANLIB
-#  define TARGET_RANLIB		        "ranlib"
+#  define TARGET_RANLIB		        "true"
 #endif
 
 /*
