@@ -1,1143 +1,564 @@
 #
-# Copyright (C) 2008-2020 OpenWrt.org
+# Makefile
 #
-# This is free software, licensed under the GNU General Public License v2.
-# See /LICENSE for more information.
+#		NOTE: This top-level Makefile must not
+#		use GNU-make extensions. The lower ones can.
+#
+# Version:	$Id: f41ad8ca1354a6a8e4c0132d19840b0588478217 $
 #
 
-include $(TOPDIR)/rules.mk
-
-PKG_NAME:=freeradius3
-PKG_VERSION:=3.2.5
-PKG_RELEASE:=2
-
-PKG_SOURCE:=freeradius-server-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://www.freeradius.org/ftp/pub/freeradius/
-PKG_HASH:=1e75f5fc1961d9854d1cb3c6921612fbe2b9edb8ee508a5a7cbd69f1e7607115
-
-PKG_MAINTAINER:=
-PKG_LICENSE:=GPL-2.0
-PKG_LICENSE_FILES:=COPYRIGHT LICENSE
-PKG_CPE_ID:=cpe:/a:freeradius:freeradius
-
-PKG_BUILD_DIR:=$(BUILD_DIR)/freeradius-server-$(PKG_VERSION)
-PKG_FIXUP:=autoreconf
-PYTHON3_PKG_BUILD:=0
-
-PKG_CONFIG_DEPENDS := \
-  FREERADIUS3_OPENSSL \
-  FREERADIUS3_NOSSL
-
-CFLAGS += $(FPIC)
-
-include $(INCLUDE_DIR)/package.mk
-include ../../lang/python/python3-package.mk
-
-define Package/freeradius3/config
-  source "$(SOURCE)/Config.in"
-endef
-
-define Package/freeradius3/Default
-  SECTION:=net
-  CATEGORY:=Network
-  URL:=https://freeradius.org/
-  SUBMENU:=FreeRADIUS (version 3)
-endef
-
-define Package/freeradius3
-  $(call Package/freeradius3/Default)
-  DEPENDS:=+freeradius3-common
-  TITLE:=A flexible RADIUS server (version 3)
-endef
-
-define Package/freeradius3/conffiles
-/etc/freeradius3/clients.conf
-/etc/freeradius3/policy.d/accounting
-/etc/freeradius3/policy.d/filter
-/etc/freeradius3/proxy.conf
-/etc/freeradius3/radiusd.conf
-/etc/freeradius3/sites-available/default
-/etc/freeradius3/sites-enabled/default
-endef
-
-define Package/freeradius3-common
-  $(call Package/freeradius3/Default)
-  TITLE:=common files
-  DEPENDS:=+USE_GLIBC:libpthread +USE_GLIBC:libbsd +FREERADIUS3_OPENSSL:libopenssl +libcap +libpcap +libncurses +libreadline +libtalloc +libatomic
-endef
-
-define Package/freeradius3-default
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 \
-+freeradius3-democerts \
-+freeradius3-mod-always \
-+freeradius3-mod-attr-filter \
-+freeradius3-mod-chap \
-+freeradius3-mod-detail \
-+freeradius3-mod-digest \
-+freeradius3-mod-eap \
-+freeradius3-mod-eap-gtc \
-+freeradius3-mod-eap-md5 \
-+freeradius3-mod-eap-mschapv2 \
-+freeradius3-mod-eap-peap \
-+freeradius3-mod-eap-pwd \
-+freeradius3-mod-eap-tls \
-+freeradius3-mod-eap-ttls \
-+freeradius3-mod-exec \
-+freeradius3-mod-expiration \
-+freeradius3-mod-expr \
-+freeradius3-mod-files \
-+freeradius3-mod-logintime \
-+freeradius3-mod-mschap \
-+freeradius3-mod-pap \
-+freeradius3-mod-preprocess \
-+freeradius3-mod-radutmp \
-+freeradius3-mod-realm \
-+freeradius3-mod-unix
-  TITLE:=Modules needed for Radius default configuration
-endef
-
-define Package/freeradius3-default/description
- This meta-package contains only dependencies for modules needed in
- FreeRADIUS default configuration.
-endef
-
-define Package/freeradius3-democerts
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Demo certificates to test the server
-endef
-
-define Package/freeradius3-mod-always
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Always module
-endef
-
-define Package/freeradius3-mod-always/conffiles
-/etc/freeradius3/mods-available/always
-/etc/freeradius3/mods-enabled/always
-endef
-
-define Package/freeradius3-mod-attr-filter
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=ATTR filter module
-endef
-
-define Package/freeradius3-mod-attr-filter/conffiles
-/etc/freeradius3/mods-available/attr_filter
-/etc/freeradius3/mods-enabled/attr_filter
-/etc/freeradius3/mods-config/attr_filter/access_challenge
-/etc/freeradius3/mods-config/attr_filter/access_reject
-/etc/freeradius3/mods-config/attr_filter/accounting_response
-/etc/freeradius3/mods-config/attr_filter/coa
-/etc/freeradius3/mods-config/attr_filter/post-proxy
-/etc/freeradius3/mods-config/attr_filter/pre-proxy
-endef
-
-define Package/freeradius3-mod-cache
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=DATASTORE CACHE
-endef
-
-define Package/freeradius3-mod-cache/conffiles
-/etc/freeradius3/mods-available/cache
-endef
-
-define Package/freeradius3-mod-cache-rbtree
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +freeradius3-mod-cache
-  TITLE:=DATASTORE CACHE RBTREE
-endef
-
-define Package/freeradius3-mod-cache-redis
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +freeradius3-mod-cache +libhiredis
-  TITLE:=DATASTORE CACHE REDIS
-endef
-
-define Package/freeradius3-mod-chap
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=CHAP module
-endef
-
-define Package/freeradius3-mod-chap/conffiles
-/etc/freeradius3/mods-available/chap
-/etc/freeradius3/mods-enabled/chap
-endef
-
-define Package/freeradius3-mod-counter
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libgdbm
-  TITLE:=Module counter
-endef
-
-define Package/freeradius3-mod-counter/conffiles
-/etc/freeradius3/mods-available/counter
-endef
-
-define Package/freeradius3-mod-date
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Module date
-endef
-
-define Package/freeradius3-mod-date/conffiles
-/etc/freeradius3/mods-available/date
-endef
-
-define Package/freeradius3-mod-detail
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Detailed accounting module
-endef
-
-define Package/freeradius3-mod-detail/conffiles
-/etc/freeradius3/mods-available/detail
-/etc/freeradius3/mods-enabled/detail
-endef
-
-define Package/freeradius3-mod-digest
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=HTTP Digest Authentication
-endef
-
-define Package/freeradius3-mod-digest/conffiles
-/etc/freeradius3/mods-available/digest
-/etc/freeradius3/mods-enabled/digest
-endef
-
-define Package/freeradius3-mod-dpsk
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=MODULE DPSK
-endef
-
-define Package/freeradius3-mod-dpsk/conffiles
-/etc/freeradius3/mods-available/dpsk
-endef
-
-define Package/freeradius3-mod-dynamic-clients
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Dynamic Clients Authentication
-endef
-
-define Package/freeradius3-mod-dynamic-clients/conffiles
-/etc/freeradius3/mods-available/dynamic_clients
-/etc/freeradius3/sites-available/dynamic-clients
-endef
-
-define Package/freeradius3-mod-eap
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Base EAP module
-endef
-
-define Package/freeradius3-mod-eap/conffiles
-/etc/freeradius3/mods-available/eap
-/etc/freeradius3/mods-enabled/eap
-/etc/freeradius3/policy.d/eap
-/etc/freeradius3/sites-enabled/inner-tunnel
-/etc/freeradius3/sites-available/inner-tunnel
-endef
-
-define Package/freeradius3-mod-eap-fast
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap @FREERADIUS3_OPENSSL
-  TITLE:=EAP/FAST module
-endef
-
-define Package/freeradius3-mod-eap-gtc
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap
-  TITLE:=EAP/GTC module
-endef
-
-define Package/freeradius3-mod-eap-md5
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap
-  TITLE:=EAP/MD5 module
-endef
-
-define Package/freeradius3-mod-eap-mschapv2
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap +freeradius3-mod-mschap
-  TITLE:=EAP/MS-CHAPv2 module
-endef
-
-define Package/freeradius3-mod-eap-peap
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap @FREERADIUS3_OPENSSL
-  TITLE:=EAP/PEAP module
-endef
-
-define Package/freeradius3-mod-eap-pwd
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap @FREERADIUS3_OPENSSL
-  TITLE:=EAP/PWD module
-endef
-
-define Package/freeradius3-mod-eap-sim
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap
-  TITLE:=EAP/SIM module
-endef
-
-define Package/freeradius3-mod-eap-tls
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap @FREERADIUS3_OPENSSL
-  TITLE:=EAP/TLS module
-endef
-
-define Package/freeradius3-mod-eap-ttls
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-eap-tls
-  TITLE:=EAP/TTLS module
-endef
-
-define Package/freeradius3-mod-exec
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=EXEC module
-endef
-
-define Package/freeradius3-mod-exec/conffiles
-/etc/freeradius3/mods-available/exec
-/etc/freeradius3/mods-enabled/exec
-endef
-
-define Package/freeradius3-mod-expiration
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Expiration module
-endef
-
-define Package/freeradius3-mod-expiration/conffiles
-/etc/freeradius3/mods-available/expiration
-/etc/freeradius3/mods-enabled/expiration
-endef
-
-define Package/freeradius3-mod-expr
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=EXPR module
-endef
-
-define Package/freeradius3-mod-expr/conffiles
-/etc/freeradius3/mods-available/expr
-/etc/freeradius3/mods-enabled/expr
-endef
-
-define Package/freeradius3-mod-files
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Module using local files for authorization
-endef
-
-define Package/freeradius3-mod-files/conffiles
-/etc/freeradius3/mods-available/files
-/etc/freeradius3/mods-enabled/files
-/etc/freeradius3/mods-config/files/accounting
-/etc/freeradius3/mods-config/files/authorize
-/etc/freeradius3/mods-config/files/pre-proxy
-endef
-
-define Package/freeradius3-mod-ippool
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libgdbm
-  TITLE:=Radius IP Pool module
-endef
-
-define Package/freeradius3-mod-ippool/conffiles
-/etc/freeradius3/mods-available/ippool
-endef
-
-define Package/freeradius3-mod-json
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libjson-c
-  TITLE:=Json module
-endef
-
-define Package/freeradius3-mod-json/conffiles
-/etc/freeradius3/mods-available/json
-endef
-
-define Package/freeradius3-mod-krb5
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +krb5-libs
-  TITLE:=Krb5 module
-endef
-
-define Package/freeradius3-mod-krb5/conffiles
-/etc/freeradius3/mods-available/krb5
-endef
-
-define Package/freeradius3-mod-ldap
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libopenldap @FREERADIUS3_OPENSSL
-  TITLE:=LDAP Authentication
-endef
-
-define Package/freeradius3-mod-ldap/conffiles
-/etc/freeradius3/mods-available/ldap
-endef
-
-define Package/freeradius3-mod-linelog
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Linelog module
-endef
-
-define Package/freeradius3-mod-linelog/conffiles
-/etc/freeradius3/mods-available/linelog
-endef
-
-define Package/freeradius3-mod-logintime
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Logintime module
-endef
-
-define Package/freeradius3-mod-logintime/conffiles
-/etc/freeradius3/mods-available/logintime
-/etc/freeradius3/mods-enabled/logintime
-endef
-
-define Package/freeradius3-mod-mschap
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=MS-CHAP and MS-CHAPv2 module
-endef
-
-define Package/freeradius3-mod-mschap/conffiles
-/etc/freeradius3/mods-available/mschap
-/etc/freeradius3/mods-enabled/mschap
-endef
-
-define Package/freeradius3-mod-pam
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libpam
-  TITLE:=PAM module
-endef
-
-define Package/freeradius3-mod-pam/conffiles
-/etc/freeradius3/mods-available/pam
-endef
-
-define Package/freeradius3-mod-pap
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=PAP module
-endef
-
-define Package/freeradius3-mod-pap/conffiles
-/etc/freeradius3/mods-available/pap
-/etc/freeradius3/mods-enabled/pap
-endef
-
-define Package/freeradius3-mod-passwd
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Rlm passwd module
-endef
-
-define Package/freeradius3-mod-passwd/conffiles
-/etc/freeradius3/mods-available/passwd
-/etc/freeradius3/mods-enabled/passwd
-endef
-
-define Package/freeradius3-mod-preprocess
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Request pre-processing module
-endef
-
-define Package/freeradius3-mod-preprocess/conffiles
-/etc/freeradius3/mods-config/preprocess/hints
-/etc/freeradius3/mods-config/preprocess/huntgroups
-/etc/freeradius3/mods-available/preprocess
-/etc/freeradius3/mods-enabled/preprocess
-endef
-
-define Package/freeradius3-mod-python3
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +python3
-  TITLE:=Python3 module
-endef
-
-define Package/freeradius3-mod-python3/conffiles
-/etc/freeradius3/mods-available/python3
-endef
-
-define Package/freeradius3-mod-radutmp
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Radius UTMP module
-endef
-
-define Package/freeradius3-mod-radutmp/conffiles
-/etc/freeradius3/mods-available/radutmp
-/etc/freeradius3/mods-enabled/radutmp
-/etc/freeradius3/mods-available/sradutmp
-/etc/freeradius3/mods-enabled/sradutmp
-endef
-
-define Package/freeradius3-mod-realm
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Realms handling module
-endef
-
-define Package/freeradius3-mod-realm/conffiles
-/etc/freeradius3/mods-available/realm
-/etc/freeradius3/mods-enabled/realm
-endef
-
-define Package/freeradius3-mod-redis
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libhiredis
-  TITLE:=Redis module
-endef
-
-define Package/freeradius3-mod-redis/conffiles
-/etc/freeradius3/mods-available/redis
-endef
-
-define Package/freeradius3-mod-rediswho
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 freeradius3-mod-redis
-  TITLE:=Rediswho module
-endef
-
-define Package/freeradius3-mod-rediswho/conffiles
-/etc/freeradius3/mods-available/rediswho
-endef
-
-define Package/freeradius3-mod-replicate
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Replicate module
-endef
-
-define Package/freeradius3-mod-replicate/conffiles
-/etc/freeradius3/mods-available/replicate
-endef
-
-define Package/freeradius3-mod-rest
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libcurl +libjson-c
-  TITLE:=Radius REST module
-endef
-
-define Package/freeradius3-mod-rest/conffiles
-/etc/freeradius3/mods-available/rest
-endef
-
-define Package/freeradius3-mod-soh
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=SoH module
-endef
-
-define Package/freeradius3-mod-soh/conffiles
-/etc/freeradius3/mods-available/soh
-/etc/freeradius3/sites-available/soh
-endef
-
-define Package/freeradius3-mod-sometimes
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Sometimes module
-endef
-
-define Package/freeradius3-mod-sometimes/conffiles
-/etc/freeradius3/mods-available/sometimes
-endef
-
-define Package/freeradius3-mod-sql
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Radius generic SQL front-end
-endef
-
-define Package/freeradius3-mod-sql/conffiles
-/etc/freeradius3/mods-available/sql
-endef
-
-define Package/freeradius3-mod-sql-map
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Map module
-endef
-
-define Package/freeradius3-mod-sql-map/conffiles
-/etc/freeradius3/mods-available/sql_map
-endef
-
-define Package/freeradius3-mod-sql-mysql
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-sql +libmysqlclient
-  TITLE:=Radius MySQL back-end drivers
-endef
-
-define Package/freeradius3-mod-sql-mysql/conffiles
-/etc/freeradius3/mods-config/sql/main/mysql
-endef
-
-define Package/freeradius3-mod-sql-null
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-sql
-  TITLE:=Radius Dummy SQL back-end drivers
-endef
-
-define Package/freeradius3-mod-sql-postgresql
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-sql +libpq
-  TITLE:=Radius PostgreSQL back-end drivers
-endef
-
-define Package/freeradius3-mod-sql-postgresql/conffiles
-/etc/freeradius3/mods-config/sql/main/postgresql
-endef
-
-define Package/freeradius3-mod-sql-sqlite
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-sql +libsqlite3
-  TITLE:=Radius SQLite back-end drivers
-endef
-
-define Package/freeradius3-mod-sql-sqlite/conffiles
-/etc/freeradius3/mods-config/sql/main/sqlite
-endef
-
-define Package/freeradius3-mod-sql-unixodbc
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3-mod-sql +unixodbc
-  TITLE:=Radius unixODBC back-end drivers
-endef
-
-define Package/freeradius3-mod-sqlcounter
-  $(call Package/freeradius3/Default)
-  DEPENDS:=+freeradius3-mod-sql
-  TITLE:=Module sqlcounter
-endef
-
-define Package/freeradius3-mod-sqlcounter/conffiles
-/etc/freeradius3/mods-config/sql/counter
-/etc/freeradius3/mods-available/sqlcounter
-endef
-
-define Package/freeradius3-mod-sqlippool
-  $(call Package/freeradius3/Default)
-  DEPENDS:=+freeradius3-mod-sql
-  TITLE:=Radius SQL Based IP Pool module
-endef
-
-define Package/freeradius3-mod-sqlippool/conffiles
-/etc/freeradius3/mods-config/sql/ippool
-/etc/freeradius3/mods-config/sql/ippool-dhcp
-/etc/freeradius3/mods-available/dhcp_sqlippool
-/etc/freeradius3/mods-available/sqlippool
-endef
-
-define Package/freeradius3-mod-totp
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Totp module
-endef
-
-define Package/freeradius3-mod-totp/conffiles
-/etc/freeradius3/mods-available/totp
-/etc/freeradius3/sites-available/totp
-endef
-
-define Package/freeradius3-mod-unbound
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libunbound
-  TITLE:=Unbound module
-endef
-
-define Package/freeradius3-mod-unbound/conffiles
-/etc/freeradius3/mods-available/unbound
-/etc/freeradius3/mods-config/unbound
-endef
-
-define Package/freeradius3-mod-unix
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=System Authentication
-endef
-
-define Package/freeradius3-mod-unix/conffiles
-/etc/freeradius3/mods-available/unix
-/etc/freeradius3/mods-enabled/unix
-endef
-
-define Package/freeradius3-mod-unpack
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Unpack module
-endef
-
-define Package/freeradius3-mod-unpack/conffiles
-/etc/freeradius3/mods-available/unpack
-endef
-
-define Package/freeradius3-mod-utf8
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=UTF8 module
-endef
-
-define Package/freeradius3-mod-utf8/conffiles
-/etc/freeradius3/mods-available/utf8
-endef
-
-define Package/freeradius3-mod-wimax
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3
-  TITLE:=Wimax Authentication
-endef
-
-define Package/freeradius3-mod-wimax/conffiles
-/etc/freeradius3/mods-available/wimax
-endef
-
-define Package/freeradius3-mod-yubikey
-  $(call Package/freeradius3/Default)
-  DEPENDS:=freeradius3 +libyubikey +ykclient
-  TITLE:=Yubikey Authentication
-endef
-
-define Package/freeradius3-mod-yubikey/conffiles
-/etc/freeradius3/mods-available/yubikey
-endef
-
-define Package/freeradius3-utils
-  $(call Package/freeradius3/Default)
-  DEPENDS:=+freeradius3-common
-  TITLE:=Misc. client utilities
-endef
-
-# This is a workaround for a bug in configure.ac, that does not check
-# for the openss/rand.h header.  Setting the macro is safe for openwrt,
-# and faster than rebuilding configure.
-# This has been fixed upstream in the 3.0.x branch, and should not be
-# needed in a future release.
-EXTRA_CFLAGS+= -DHAVE_OPENSSL_RAND_H
-
-CONFIGURE_ARGS+= \
-	--libdir=/usr/lib/freeradius3 \
-	--libexecdir=/usr/lib/freeradius3 \
-	--disable-developer \
-	--with-threads \
-	$(if $(CONFIG_FREERADIUS3_OPENSSL),--with,--without)-openssl \
-	$(if $(CONFIG_FREERADIUS3_OPENSSL),--with-openssl-includes="$(STAGING_DIR)/usr/include",) \
-	$(if $(CONFIG_FREERADIUS3_OPENSSL),--with-openssl-libraries="$(STAGING_DIR)/usr/lib",) \
-	$(if $(CONFIG_FREERADIUS3_OPENSSL),--disable-openssl-version-check,) \
-	--with-talloc-include-dir="$(STAGING_DIR)/usr/include" \
-	--with-talloc-lib-dir="$(STAGING_DIR)/usr/lib" \
-	--enable-strict-dependencies \
-	--with-dictdir=/usr/share/freeradius3 \
-	--with-raddbdir=/etc/freeradius3 \
-	--with-radacctdir=/var/db/radacct \
-	--with-logdir=/var/log \
-	--without-pcre \
-	--without-rlm_cache_memcached \
-	--without-rlm_couchbase \
-	--without-rlm_eap_ikev2 \
-	--without-rlm_eap_tnc \
-	--without-rlm_perl \
-	--without-rlm_python \
-	--without-rlm_sql_db2 \
-	--without-rlm_sql_firebird \
-	--without-rlm_sql_freetds \
-	--without-rlm_sql_iodbc \
-	--without-rlm_sql_oracle \
-
-CONFIGURE_LIBS+= -latomic
-
-PKG_DICTIONARIES:= \
-	compat \
-	freeradius freeradius.internal \
-	rfc2865 rfc2866 rfc2867 rfc2868 rfc2869 rfc3162 rfc3576 rfc3580 \
-	rfc4072 rfc4372 rfc4675 rfc4679 rfc5580 rfc6911 \
-	microsoft \
-	wispr \
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-cache-redis),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_cache_redis \
-		--with-rlm_cache_redis-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_cache_redis-lib-dir="$(STAGING_DIR)/usr/lib"
+#
+#  The default rule is "all".
+#
+all:
+
+#
+#  Catch people who try to use BSD make
+#
+ifeq "0" "1"
+  $(error GNU Make is required to build FreeRADIUS)
+endif
+
+#
+#  The version of GNU Make is too old,
+#  don't use it (.FEATURES variable was added in 3.81)
+#
+ifndef .FEATURES
+  $(error This build system requires GNU Make 4.0 or higher)
+endif
+
+#
+#  Check for our required list of features
+#
+is_feature = $(if $(filter $1,$(.FEATURES)),T)
+ifeq "$(call is_feature,load)" ""
+  $(error GNU Make $(MAKE_VERSION) does not support the "load" keyword (dynamically loaded extensions), upgrade to GNU Make 4.0 or higher)
+endif
+
+#
+#  We require Make.inc, UNLESS we're building packages running
+#  VMs or producing tar files tar files.
+#
+#  Since "make deb" and "make rpm" re-run configure...
+#  there's no point in requiring the developer to run configure
+#  *before* making packages.
+#
+ifeq "$(filter deb rpm pkg_version crossbuild freeradius-server-%,$(MAKECMDGOALS))" ""
+  $(if $(wildcard Make.inc),,$(error Missing 'Make.inc' Run './configure [options]' and retry))
+  include Make.inc
 else
-  CONFIGURE_ARGS+= --without-rlm_cache_redis
+  top_srcdir:=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+  BUILD_DIR:=build
 endif
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-eap-fast),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_eap_fast \
-		--with-rlm_eap_fast-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_eap_fast-lib-dir="$(STAGING_DIR)/usr/lib"
-  CONFIGURE_LIBS+= -lcrypto -lssl
+#
+#  'configure' was not run?  Get the version number from the file.
+#
+ifeq "$(RADIUSD_VERSION)" ""
+  RADIUSD_VERSION_MAJOR := $(shell ./version.sh major)
+  RADIUSD_VERSION_MINOR := $(shell ./version.sh minor)
+
+  # Default to an incremental version of 0 if we're not building from git
+  RADIUSD_VERSION_INCRM := $(shell ./version.sh commit_depth)
+endif
+
+ifeq "$(RADIUSD_VERSION_INCRM)" ""
+  RADIUSD_VERSION_INCRM := $(shell ./version.sh incrm)
+  PKG_VERSION_SUFFIX :=
+  ifeq "$(RADIUSD_VERSION_INCRM)" ""
+    RADIUSD_VERSION_SEP :=
+  else
+    RADIUSD_VERSION_SEP := .
+  endif
 else
-  CONFIGURE_ARGS+= --without-rlm_eap_fast
+  PKG_VERSION_SUFFIX := +git
+  RADIUSD_VERSION_SEP := ~
 endif
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-eap-peap),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_eap_peap \
-		--with-rlm_eap_peap-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_eap_peap-lib-dir="$(STAGING_DIR)/usr/lib"
-  CONFIGURE_LIBS+= -lcrypto -lssl
+ifeq "$(shell ./version.sh is_release)" "1"
+  PKG_VERSION := $(shell cat VERSION)
 else
-  CONFIGURE_ARGS+= --without-rlm_eap_peap
+  PKG_VERSION := $(RADIUSD_VERSION_MAJOR).$(RADIUSD_VERSION_MINOR)$(RADIUSD_VERSION_SEP)$(RADIUSD_VERSION_INCRM)$(PKG_VERSION_SUFFIX)
 endif
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-eap-pwd),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_eap_pwd \
-		--with-rlm_eap_pwd-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_eap_pwd-lib-dir="$(STAGING_DIR)/usr/lib"
-  CONFIGURE_LIBS+= -lcrypto -lssl
+.PHONY: pkg_version
+pkg_version:
+	@echo $(PKG_VERSION)
+
+MFLAGS += --no-print-directory
+
+export DESTDIR := $(R)
+export PROJECT_NAME := freeradius
+
+#
+#  src/include/all.mk needs these, so define them before we include that file.
+#
+PROTOCOLS    := \
+	arp \
+	bfd \
+	dhcpv4 \
+	dhcpv6 \
+	dns \
+	eap/aka-sim \
+	ethernet \
+	freeradius \
+	ldap \
+	radius \
+	snmp \
+	tacacs \
+	vmps \
+	tftp \
+	tls
+
+#
+#  If we're building packages or crossbuilding, just do that.
+#  Don't try to do a local build.
+#
+ifeq "$(filter deb rpm pkg_version freeradius-server-%,$(MAKECMDGOALS))" ""
+  ifeq "$(findstring crossbuild,$(MAKECMDGOALS))" ""
+
+
+#
+#  Include all of the autoconf definitions into the Make variable space
+#
+#  We include this file BEFORE starting the full make process.  That
+#  way every "all.mk" file can take advantage of the definitions seen
+#  here.
+#
+build/autoconf.mk: src/include/autoconf.h
+	@mkdir -p build
+	${Q}grep '^#define' $^ | sed 's/#define /AC_/;s/ / := /' > $@
+
+      -include build/autoconf.mk
+
+      #
+      #  Autoload the various libraries needed for building.
+      #
+      #  If the build is targeting these explicitly, then we are OK if their
+      #  features don't exist.  If we're building everything else, then
+      #  build these first, and then load the libraries.
+      #
+      #  Ensure that these libraries are built ONLY when doing a full build,
+      #  AND that they are built and loaded before using the rest of the
+      #  boilermake framework, UNLESS we're doing "make clean", in which case
+      #  don't include the magic libraries.
+      #
+      ifeq "$(findstring clean,$(MAKECMDGOALS))" ""
+        ifeq "$(findstring libfreeradius-make,$(MAKECMDGOALS))" ""
+
+          #
+          #  Avoid calling shell if we don't need to build support libraries
+          #
+          ifeq "$(wildcard build/lib/.libs/libfreeradius-make-dlopen.${BUILD_LIB_EXT})" ""
+            BUILD_MAKE_LIBS=yes
+          endif
+          ifeq "$(wildcard build/lib/.libs/libfreeradius-make-version.${BUILD_LIB_EXT})" ""
+            BUILD_MAKE_LIBS=yes
+          endif
+          ifeq "$(wildcard build/lib/.libs/libfreeradius-make-util.${BUILD_LIB_EXT})" ""
+            BUILD_MAKE_LIBS=yes
+          endif
+
+          ifdef BUILD_MAKE_LIBS
+            define n
+          endef
+          $(info $(subst CC,$nCC,$(shell $(MAKE) VERBOSE=$(VERBOSE) libfreeradius-make-dlopen.${BUILD_LIB_EXT} libfreeradius-make-version.${BUILD_LIB_EXT} libfreeradius-make-util.${BUILD_LIB_EXT})))
+        endif
+
+        load build/lib/.libs/libfreeradius-make-dlopen.${BUILD_LIB_EXT}(dlopen_gmk_setup)
+        load build/lib/.libs/libfreeradius-make-version.${BUILD_LIB_EXT}(version_gmk_setup)
+        load build/lib/.libs/libfreeradius-make-util.${BUILD_LIB_EXT}(util_gmk_setup)
+      else
+        BUILD_DIR:=${top_srcdir}/build
+        top_builddir:=${top_srcdir}/scripts/build
+      endif
+    endif
+
+    #
+    #  Load the huge boilermake framework.
+    #
+    include scripts/boiler.mk
+  endif
+endif
+
+#
+# The $(R) is a magic variable not defined anywhere in this source.
+# It's purpose is to allow an admin to create an installation 'tar'
+# file *without* actually installing it.  e.g.:
+#
+#  $ R=/home/root/tmp make install
+#  $ cd /home/root/tmp
+#  $ tar -cf ~/freeradius-package.tar *
+#
+# The 'tar' file can then be un-tar'd on any similar machine.  It's a
+# cheap way of creating packages, without using a package manager.
+# Many of the platform-specific packaging tools use the $(R) variable
+# when creating their packages.
+#
+# For compatibility with typical GNU packages (e.g. as seen in libltdl),
+# we make sure DESTDIR is defined.
+#
+#  If R is defined, ensure that it ends in a '/'.
+#
+ifneq "$(R)" ""
+  R:=$(subst //,/,$(R)/)
+  export DESTDIR := $(R)
+endif
+
+DICTIONARIES := $(wildcard $(addsuffix /dictionary*,$(addprefix share/dictionary/,$(PROTOCOLS))))
+MIBS = $(wildcard share/snmp/mibs/*.mib)
+
+install.share: \
+	$(addprefix $(R)$(dictdir)/,$(patsubst share/dictionary/%,%,$(DICTIONARIES))) \
+	$(addprefix $(R)$(mibdir)/,$(patsubst share/snmp/mibs/%,%,$(MIBS)))
+
+$(R)$(dictdir)/%: share/dictionary/%
+	@echo INSTALL $(patsubst share/dictionary/%,%,$<)
+	@$(INSTALL) -m 644 $< $@
+
+$(R)$(mibdir)/%: share/snmp/mibs/%
+	@echo INSTALL $(patsubst share/snmp/mibs/%,%,$<)
+	@$(INSTALL) -m 644 $< $@
+
+.PHONY: dictionary.format
+dictionary.format: $(DICTIONARIES)
+	@./scripts/dict/format.pl $(DICTIONARIES)
+
+MANFILES := $(wildcard man/man*/*.?) $(AUTO_MAN_FILES)
+install.man: $(subst man/,$(R)$(mandir)/,$(MANFILES))
+
+$(R)$(mandir)/%: man/%
+	@echo INSTALL $(notdir $<)
+	@sed -e "s,/etc/raddb,$(raddbdir),g" \
+		-e "s,/usr/local/share,$(datarootdir),g" \
+		$< > $<.subst
+	@$(INSTALL) -m 644 $<.subst $@
+	@rm $<.subst
+
+#
+#  Don't install rlm_test
+#
+ALL_INSTALL := $(patsubst %rlm_test.la,,$(ALL_INSTALL))
+
+install: install.share install.man
+	@$(INSTALL) -d -m 700	$(R)$(logdir)
+	@$(INSTALL) -d -m 700	$(R)$(radacctdir)
+
+ifneq ($(RADMIN),)
+  ifneq ($(RGROUP),)
+.PHONY: install-chown
+install-chown:
+	chown -R $(RADMIN)   $(R)$(raddbdir)
+	chgrp -R $(RGROUP)   $(R)$(raddbdir)
+	chmod u=rwx,g=rx,o=  `find $(R)$(raddbdir) -type d -print`
+	chmod u=rw,g=r,o=    `find $(R)$(raddbdir) -type f -print`
+	chown -R $(RADMIN)   $(R)$(logdir)
+	chgrp -R $(RGROUP)   $(R)$(logdir)
+	find $(R)$(logdir) -type d -exec chmod u=rwx,g=rwx,o= {} \;
+	find $(R)$(logdir) -type d -exec chmod g+s {} \;
+	find $(R)$(logdir) -type f -exec chmod u=rw,g=rw,o= {} \;
+	chown -R $(RADMIN)   $(R)$(RUNDIR)
+	chgrp -R $(RGROUP)   $(R)$(RUNDIR)
+	find $(R)$(RUNDIR) -type d -exec chmod u=rwx,g=rwx,o= {} \;
+	find $(R)$(RUNDIR) -type d -exec chmod g+s {} \;
+	find $(R)$(RUNDIR) -type f -exec chmod u=rw,g=rw,o= {} \;
+  endif
+endif
+
+distclean: clean
+	@-find src/modules -regex .\*/config[.][^.]*\$$ -delete
+	@-find src/modules -name autom4te.cache -exec rm -rf '{}' \;
+	@-find src/modules -name aclocal.m4 -exec rm -rf '{}' \;
+	@rm -rf config.cache config.log config.status libtool \
+		src/include/radpaths.h src/include/stamp-h \
+		libltdl/config.log libltdl/config.status \
+		libltdl/libtool autom4te.cache build aclocal.m4
+	@-find . ! -name configure.ac -name \*.in -print | \
+		sed 's/\.in$$//' | \
+		while read file; do rm -f $$file; done
+
+######################################################################
+#
+#  Automatic remaking rules suggested by info:autoconf#Automatic_Remaking
+#
+######################################################################
+#
+#  Do these checks ONLY if we're re-building the "configure"
+#  scripts, and ONLY the "configure" scripts.  If we leave
+#  these rules enabled by default, then they're run too often.
+#
+ifeq "$(MAKECMDGOALS)" "reconfig"
+  DO_RECONFIGURE=1
+endif
+
+ifneq "$(filter %configure,$(MAKECMDGOALS))" ""
+  DO_RECONFIGURE=1
+endif
+
+ifeq "$(DO_RECONFIGURE)" "1"
+
+  CONFIGURE_AC_FILES := $(shell find . -name configure.ac -print)
+  CONFIGURE_FILES	   := $(patsubst %.ac,%,$(CONFIGURE_AC_FILES))
+
+  #
+  #  The GNU tools make autoconf=="missing autoconf", which then returns
+  #  0, even when autoconf doesn't exist.  This check is to ensure that
+  #  we run AUTOCONF only when it exists.
+  #
+  AUTOCONF_EXISTS := $(shell autoconf --version 2>/dev/null)
+
+  ifeq "$(AUTOCONF_EXISTS)" ""
+    $(error You need to install autoconf to re-build the "configure" scripts)
+  endif
+
+# Configure files depend on "in" files, and on the top-level macro files
+# If there are headers, run auto-header, too.
+src/%configure: src/%configure.ac $(wildcard $(dir $@)m4/*m4) | src/freeradius-devel
+	@echo AUTOCONF $(dir $@)
+	@cd $(dir $@) && \
+		$(ACLOCAL) --force -I $(top_builddir)/m4 && \
+		$(AUTOCONF) --force
+	@if grep AC_CONFIG_HEADERS $@ >/dev/null; then\
+		echo AUTOHEADER $@ \
+		cd $(dir $@) && $(AUTOHEADER) --force; \
+	 fi
+	@touch $@
+
+# "%configure" doesn't match "configure"
+configure: configure.ac $(wildcard m4/*.m4)
+	@echo AUTOCONF $@
+	@$(ACLOCAL) --force -I $(top_builddir)/m4
+	@$(AUTOCONF) --force
+
+src/include/autoconf.h.in: configure.ac
+	@echo AUTOHEADER $@
+	@$(AUTOHEADER) --force
+
+reconfig: $(CONFIGURE_FILES) src/include/autoconf.h.in
+
+config.status: configure
+	./config.status --recheck
+
+# target is "configure"
+endif
+
+#  If we've already run configure, then add rules which cause the
+#  module-specific "all.mk" files to depend on the mk.in files, and on
+#  the configure script.
+#
+ifneq "$(wildcard config.log)" ""
+  CONFIGURE_ARGS := $(shell head -10 config.log | grep '^  \$$' | sed 's/^....//;s:.*configure ::')
+
+#
+#  ONLY re-run "configure" if we're told to do that.  Otherwise every
+#  change to a configure file will have it try to re-run the local
+#  configure script, which doesn't always work.
+#
+ifeq "$(DO_RECONFIGURE)" "1"
+src/%all.mk: src/%all.mk.in src/%configure
+	@echo CONFIGURE $(dir $@)
+	@rm -f ./config.cache $(dir $<)/config.cache
+	@cd $(dir $<) && ./configure $(CONFIGURE_ARGS) && touch $(notdir $@)
 else
-  CONFIGURE_ARGS+= --without-rlm_eap_pwd
+src/%all.mk: src/%all.mk.in src/%configure
+	@echo WARNING: $@ is out of date.  Please re-run 'configure'
 endif
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-eap-tls),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_eap_tls \
-		--with-rlm_eap_tls-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_eap_tls-lib-dir="$(STAGING_DIR)/usr/lib"
-  CONFIGURE_LIBS+= -lcrypto -lssl
-else
-  CONFIGURE_ARGS+= --without-rlm_eap_tls
 endif
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-eap-ttls),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_eap_ttls \
-		--with-rlm_eap_ttls-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_eap_ttls-lib-dir="$(STAGING_DIR)/usr/lib"
-  CONFIGURE_LIBS+= -lcrypto -lssl
-else
-  CONFIGURE_ARGS+= --without-rlm_eap_ttls
-endif
+.PHONY: force-reconfig
+force-reconfig:
+	@find . -name configure.ac | xargs touch
+	@$(MAKE) reconfig
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-ippool),)
-  CONFIGURE_ARGS+= --with-rlm_ippool \
-		--with-rlm_ippool-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_ippool-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_ippool
-endif
+.PHONY: check-includes
+check-includes:
+	scripts/min-includes.pl `find . -name "*.c" -print`
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-json),)
-  CONFIGURE_ARGS+= --with-rlm_json \
-		--with-rlm_json-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_json-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_json
-endif
+.PHONY: TAGS
+TAGS:
+	etags `find src -type f -name '*.[ch]' -print` > $@
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-krb5),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_krb5 \
-		--with-rlm-krb5-dir="$(STAGING_DIR)/host/bin/krb5-config"
-else
-  CONFIGURE_ARGS+= --without-rlm_krb5
-endif
+.PHONY: compile_commands.json
+compile_commands.json:
+	@echo '[' > $@ ; \
+	find ./build/objs/src -type f -name '*.cc.json' -exec cat {} \; >> $@;\
+	echo ']' >> $@
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-ldap),)
-  CONFIGURE_ARGS+= --with-rlm_ldap \
-		--with-rlm_ldap-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_ldap-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_ldap
-endif
+#
+#  Make test certificates.
+#
+.PHONY: certs
+certs:
+	@$(MAKE) -C raddb/certs
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-python3),)
-  CFLAGS+= -fPIC
-  CONFIGURE_ARGS+= \
-		--with-modules="rlm_python3" \
-		--with-rlm-python3-config-bin="$(STAGING_DIR)/host/bin/python$(PYTHON3_VERSION)-config"
-else
-  CONFIGURE_ARGS+= --without-rlm_python3
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-radutmp),)
-  CONFIGURE_ARGS+= --with-rlm_radutmp
-else
-  CONFIGURE_ARGS+= --without-rlm_radutmp
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-redis),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_redis \
-		--with-rlm_redis-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_redis-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_redis
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-rediswho),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_rediswho \
-		--with-rlm_rediswho-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_rediswho-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_rediswho
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-rest),)
-  CONFIGURE_ARGS+= --with-rlm_rest
-else
-  CONFIGURE_ARGS+= --without-rlm_rest
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-sql),)
-  CONFIGURE_ARGS+= --with-rlm_sql
-else
-  CONFIGURE_ARGS+= --without-rlm_sql
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-sql-mysql),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_sql_mysql \
-		--with-mysql-include-dir="$(STAGING_DIR)/usr/include/mysql"
-else
-  CONFIGURE_ARGS+= --without-rlm_sql_mysql
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-sql-postgresql),)
-  CONFIGURE_ARGS+= --with-rlm_sql_postgresql
-else
-  CONFIGURE_ARGS+= --without-rlm_sql_postgresql
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-sql-sqlite),)
-  CONFIGURE_ARGS+= --with-rlm_sql_sqlite
-else
-  CONFIGURE_ARGS+= --without-rlm_sql_sqlite
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-unixodbc),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_sql_unixodbc \
-		--with-rlm_sql_unixodbc-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_sql_unixodbc-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_sql_unixodbc
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-sqlcounter),)
-  CONFIGURE_ARGS+= --with-rlm_sqlcounter
-else
-  CONFIGURE_ARGS+= --without-rlm_sqlcounter
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-sqlippool),)
-  CONFIGURE_ARGS+= --with-rlm_sqlippool
-else
-  CONFIGURE_ARGS+= --without-rlm_sqlippool
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-unbound),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_unbound \
-		--with-rlm_unbound-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_unbound-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_unbound
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-unix),)
-  CONFIGURE_ARGS+= --with-rlm_unix
-else
-  CONFIGURE_ARGS+= --without-rlm_unix
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_freeradius3-mod-yubikey),)
-  CONFIGURE_ARGS+= \
-		--with-rlm_yubikey \
-		--with-rlm_yubikey-include-dir="$(STAGING_DIR)/usr/include" \
-		--with-rlm_yubikey-lib-dir="$(STAGING_DIR)/usr/lib"
-else
-  CONFIGURE_ARGS+= --without-rlm_yubikey
-endif
-
-ifeq ($(CONFIG_USE_GLIBC),y)
-  TARGET_CFLAGS+= -DLIBBSD_OVERLAY -I$(STAGING_DIR)/usr/include/bsd \
-	-D_RPC_NETDB_H
-	#^^^^^^^^^^^^^ avoid inclusion of librpc's netdb.h
-  CONFIGURE_LIBS+= -Wl,--push-state,--as-needed -lbsd -Wl,--pop-state
-endif
-
-CONFIGURE_VARS+= \
-	LDFLAGS="$$$$LDFLAGS" \
-	LIBS="$(CONFIGURE_LIBS)" \
-	MYSQL_CONFIG="no" \
-	vl_cv_lib_readline=no \
-	ax_cv_cc_builtin_choose_expr=yes \
-	ax_cv_cc_builtin_types_compatible_p=yes ax_cv_cc_builtin_bswap64=yes \
-	ax_cv_cc_bounded_attribute=no \
-	ac_cv_lib_collectdclient_lcc_connect=no \
-	ac_cv_lib_execinfo_backtrace_symbols=no
-
-define Build/Compile
-	# Compile jlibtool for the host once the configuration is done
-	(cd $(PKG_BUILD_DIR); \
-		mkdir -p build/make; \
-		$(HOSTCC) $(HOST_CFLAGS) scripts/jlibtool.c -o build/make/jlibtool; \
-	)
-	$(MAKE) -C $(PKG_BUILD_DIR) \
-		R="$(PKG_INSTALL_DIR)" \
-		INSTALLSTRIP="" \
-		all install
-endef
-
-define Package/freeradius3-common/install
-	$(INSTALL_DIR) $(1)/etc/freeradius3
-	chmod 771 $(1)/etc/freeradius3
-	$(CP) $(PKG_INSTALL_DIR)/etc/freeradius3/dictionary $(1)/etc/freeradius3/ ; \
-	$(INSTALL_DIR) $(1)/usr/lib/freeradius3
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/freeradius3/libfreeradius-{dhcp,eap,radius,server}.so $(1)/usr/lib/freeradius3
-	$(INSTALL_DIR) $(1)/usr/share/freeradius3
-	$(CP) $(PKG_INSTALL_DIR)/usr/share/freeradius3/dictionary $(1)/usr/share/freeradius3/
-	$(SED) "s,^\(\$$$$INCLUDE\),#\1,g" $(1)/usr/share/freeradius3/dictionary
-	for f in $(PKG_DICTIONARIES); do \
-		$(CP) $(PKG_INSTALL_DIR)/usr/share/freeradius3/dictionary.$$$${f} $(1)/usr/share/freeradius3/ ; \
-		$(SED) "s,^#\(\$$$$INCLUDE dictionary\.$$$${f}\)$$$$,\1,g" $(1)/usr/share/freeradius3/dictionary ; \
+######################################################################
+#
+#  Make a release.
+#
+#  Note that VERSION has to be updated with the release number and configure should
+#  be re-run if it's been run previously, BEFORE running this command!
+#
+#  These targets determine if release tarballs/rpms/debs should be produced by checking
+#  the following conditions:
+#
+#  - RELEASE=1 is set in make's environment.
+#  - A RELEASE file is present in the root of the working directory.
+#  - The current commit matches a release_ tag.
+#
+#  If none of these conditions are true, or RELEASE=0 is set, then development
+#  tarballs/rpms/debs will be produced.  These will build with developer-mode
+#  enabled, which enables additional debugging, adds full debugging symbols and disables
+#  optimisation.
+#
+######################################################################
+.PHONY: freeradius-server-$(PKG_VERSION).tar
+#
+# This can't depend on .git/ (dirs don't work) or .git/HEAD (not present in submodules)
+# so it's just left as a phony target.
+#
+# Do NOT move calculation of BRANCH outside of the recipe.  Every shell expansion
+# carries with it a performance penalty, that is felt every time make is executed.
+#
+# Original recipe used --add-virtual-file which was added in 237a1d1, on May 30th
+# 2022, which was too late for current versions of our target distros.
+# Code should be revisited in a few years to switch --add-file to --add-virtual-file.
+#
+BRANCH_CMD := git rev-parse --abbrev-ref HEAD
+freeradius-server-$(PKG_VERSION).tar:
+	rm -rf $(top_srcdir)/$(BUILD_DIR)/freeradius-server-$(PKG_VERSION)
+	mkdir -p $(top_srcdir)/$(BUILD_DIR)
+	BRANCH=$$(${BRANCH_CMD}); \
+	tmp=$$(mktemp -d); \
+	if [ $$(./version.sh is_release) -eq 1 ]; then\
+		touch "$${tmp}/RELEASE"; \
+		release_arg="--add-file=$${tmp}/RELEASE"; \
+	fi; \
+	echo "$$(./version.sh commit)" > "$${tmp}/VERSION_COMMIT"; \
+	echo "$$(./version.sh commit_depth)" > "$${tmp}/VERSION_COMMIT_DEPTH"; \
+	git archive \
+		--format=tar \
+		--prefix="freeradius-server-$(PKG_VERSION)/" \
+		--add-file="$${tmp}/VERSION_COMMIT" \
+		--add-file="$${tmp}/VERSION_COMMIT_DEPTH" \
+		$${release_arg} \
+		$${BRANCH} | tar -C "${top_srcdir}/${BUILD_DIR}" -xf -; \
+	rm -rf "$${tmp}"; \
+	git submodule foreach --recursive 'git archive --format=tar --prefix=freeradius-server-$(PKG_VERSION)/$$sm_path/ $$sha1 | tar -C "${top_srcdir}/${BUILD_DIR}" -xf -'
+ifneq "$(EXT_MODULES)" ""
+	BRANCH=$$(${BRANCH_CMD}); \
+	for x in $(subst _ext,,$(EXT_MODULES)); do \
+		cd $(top_srcdir)/$${x}_ext && \
+		git archive --format=tar --prefix=freeradius-server-$(PKG_VERSION)/$$x/ $${BRANCH} | tar -C "${top_srcdir}/${BUILD_DIR}" -xf -; \
 	done
-endef
+endif
+	tar -cf $@ -C $(top_srcdir)/$(BUILD_DIR) freeradius-server-$(PKG_VERSION)
 
-define Package/freeradius3/install
-	$(INSTALL_DIR) $(1)/etc/freeradius3
-	$(INSTALL_DIR) $(1)/etc/freeradius3/policy.d
-	$(INSTALL_DIR) $(1)/etc/freeradius3/sites-available
-	$(INSTALL_DIR) $(1)/etc/freeradius3/sites-enabled
-	for f in clients.conf radiusd.conf proxy.conf; do \
-		$(CP) $(PKG_INSTALL_DIR)/etc/freeradius3/$$$${f} $(1)/etc/freeradius3/ ; \
-	done
-	for f in accounting filter; do \
-		$(CP) $(PKG_INSTALL_DIR)/etc/freeradius3/policy.d/$$$${f} $(1)/etc/freeradius3/policy.d/ ; \
-	done
-	for f in default; do \
-		$(CP) $(PKG_INSTALL_DIR)/etc/freeradius3/sites-available/$$$${f} $(1)/etc/freeradius3/sites-available/ ; \
-		$(CP) $(PKG_INSTALL_DIR)/etc/freeradius3/sites-enabled/$$$${f} $(1)/etc/freeradius3/sites-enabled/ ; \
-	done
+freeradius-server-$(PKG_VERSION).tar.gz: freeradius-server-$(PKG_VERSION).tar
+	gzip < $^ > $@
 
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/radiusd $(1)/usr/sbin/
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/radiusd.init $(1)/etc/init.d/radiusd
-endef
+freeradius-server-$(PKG_VERSION).tar.bz2: freeradius-server-$(PKG_VERSION).tar
+	bzip2 < $^ > $@
 
-define Package/freeradius3-default/install
-	true
-endef
+%.sig: %
+	gpg --default-key packages@freeradius.org -b $<
 
-define Package/freeradius3-democerts/install
-	$(INSTALL_DIR) $(1)/etc/freeradius3/certs
-	$(CP) \
-		$(PKG_INSTALL_DIR)/etc/freeradius3/certs/ca.pem \
-		$(PKG_INSTALL_DIR)/etc/freeradius3/certs/server.pem \
-		$(1)/etc/freeradius3/certs/
-endef
+# high-level targets
+.PHONY: dist-check
+dist-check: redhat/freeradius.spec debian/changelog
+	@if [ `grep '^%global _version' redhat/freeradius.spec | cut -d' ' -f3` != "$(PKG_VERSION)" ]; then \
+		sed 's/^%global _version .*/%global _version $(PKG_VERSION)/' redhat/freeradius.spec > redhat/.foo; \
+		mv redhat/.foo redhat/freeradius.spec; \
+		echo Updated redhat/freeradius.spec '_version' to $(PKG_VERSION); \
+	fi
+	@if [ `head -n 1 doc/ChangeLog | awk '/^FreeRADIUS/{print $$2}'` != "$(PKG_VERSION)" ]; then \
+		echo doc/ChangeLog needs to be updated; \
+		exit 1; \
+	fi
+	@if [ `head -n 1 debian/changelog | sed 's/.*(//;s/).*//'` != "$(PKG_VERSION)" ]; then \
+		echo debian/changelog needs to be updated; \
+		exit 1; \
+	fi
+	@if [ `grep version doc/antora/antora.yml | sed 's/^.*version: //'` != "'$(PKG_VERSION)'" ]; then \
+		echo doc/antora/antora.yml needs to be updated with: version '$(PKG_VERSION)'; \
+		exit 1; \
+	fi
 
-define Package/freeradius3-utils/install
-	$(INSTALL_DIR) $(1)/usr/bin
-	for f in radclient radeapclient radtest radwho; do \
-		$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/$$$${f} $(1)/usr/bin/ ; \
-	done
-endef
+dist: dist-check freeradius-server-$(PKG_VERSION).tar.gz freeradius-server-$(PKG_VERSION).tar.bz2
 
-define BuildPlugin
-  define Package/$(1)/install
-	[ -z "$(2)" ] || $(INSTALL_DIR) $$(1)/usr/lib/freeradius3
-	for m in $(2); do \
-		$(CP) $(PKG_INSTALL_DIR)/usr/lib/freeradius3/$$$$$$$${m}.so $$(1)/usr/lib/freeradius3 ; \
-	done
-	# Install configuration files
-	for f in $(strip $(call Package/$(1)/conffiles)); do \
-		$(INSTALL_DIR) $$(1)/$$$$$$$${f%/*} ; \
-		$(CP) $(PKG_INSTALL_DIR)/$$$$$$$${f} $$(1)/$$$$$$$${f}; \
-	done
-  endef
+dist-sign: freeradius-server-$(PKG_VERSION).tar.gz.sig freeradius-server-$(PKG_VERSION).tar.bz2.sig
 
-  $$(eval $$(call BuildPackage,$(1)))
-endef
+dist-publish: freeradius-server-$(PKG_VERSION).tar.gz.sig freeradius-server-$(PKG_VERSION).tar.gz freeradius-server-$(PKG_VERSION).tar.gz.sig freeradius-server-$(PKG_VERSION).tar.bz2 freeradius-server-$(PKG_VERSION).tar.gz.sig freeradius-server-$(PKG_VERSION).tar.bz2.sig
+	scp $^ freeradius.org@ns5.freeradius.org:public_ftp
+	scp $^ freeradius.org@www.tr.freeradius.org:public_ftp
 
+#
+#  Note that we do NOT do the tagging here!  We just print out what
+#  to do!
+#
+dist-tag: freeradius-server-$(PKG_VERSION).tar.gz freeradius-server-$(PKG_VERSION).tar.bz2
+	@echo "git tag release_`echo $(PKG_VERSION) | tr .- __`"
 
-$(eval $(call BuildPackage,freeradius3))
-$(eval $(call BuildPackage,freeradius3-common))
-$(eval $(call BuildPackage,freeradius3-default))
-$(eval $(call BuildPackage,freeradius3-democerts))
-$(eval $(call BuildPlugin,freeradius3-mod-always,rlm_always,))
-$(eval $(call BuildPlugin,freeradius3-mod-attr-filter,rlm_attr_filter,))
-$(eval $(call BuildPlugin,freeradius3-mod-cache,rlm_cache,))
-$(eval $(call BuildPlugin,freeradius3-mod-cache-rbtree,rlm_cache_rbtree,))
-$(eval $(call BuildPlugin,freeradius3-mod-cache-redis,rlm_cache_redis,))
-$(eval $(call BuildPlugin,freeradius3-mod-chap,rlm_chap,))
-$(eval $(call BuildPlugin,freeradius3-mod-counter,rlm_counter,))
-$(eval $(call BuildPlugin,freeradius3-mod-date,rlm_date,))
-$(eval $(call BuildPlugin,freeradius3-mod-detail,rlm_detail,))
-$(eval $(call BuildPlugin,freeradius3-mod-digest,rlm_digest,))
-$(eval $(call BuildPlugin,freeradius3-mod-dpsk,rlm_dpsk,))
-$(eval $(call BuildPlugin,freeradius3-mod-dynamic-clients,rlm_dynamic_clients,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap,rlm_eap,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-fast,rlm_eap_fast,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-gtc,rlm_eap_gtc,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-md5,rlm_eap_md5,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-mschapv2,rlm_eap_mschapv2,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-peap,rlm_eap_peap,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-pwd,rlm_eap_pwd,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-sim,rlm_eap_sim,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-tls,rlm_eap_tls,))
-$(eval $(call BuildPlugin,freeradius3-mod-eap-ttls,rlm_eap_ttls,))
-$(eval $(call BuildPlugin,freeradius3-mod-exec,rlm_exec,))
-$(eval $(call BuildPlugin,freeradius3-mod-expiration,rlm_expiration,))
-$(eval $(call BuildPlugin,freeradius3-mod-expr,rlm_expr,))
-$(eval $(call BuildPlugin,freeradius3-mod-files,rlm_files,))
-$(eval $(call BuildPlugin,freeradius3-mod-ippool,rlm_ippool,))
-$(eval $(call BuildPlugin,freeradius3-mod-json,rlm_json,))
-$(eval $(call BuildPlugin,freeradius3-mod-krb5,rlm_krb5,))
-$(eval $(call BuildPlugin,freeradius3-mod-ldap,rlm_ldap,))
-$(eval $(call BuildPlugin,freeradius3-mod-linelog,rlm_linelog,))
-$(eval $(call BuildPlugin,freeradius3-mod-logintime,rlm_logintime,))
-$(eval $(call BuildPlugin,freeradius3-mod-mschap,rlm_mschap,))
-$(eval $(call BuildPlugin,freeradius3-mod-pam,rlm_pam,))
-$(eval $(call BuildPlugin,freeradius3-mod-pap,rlm_pap,))
-$(eval $(call BuildPlugin,freeradius3-mod-passwd,rlm_passwd,))
-$(eval $(call BuildPlugin,freeradius3-mod-preprocess,rlm_preprocess,))
-$(eval $(call BuildPlugin,freeradius3-mod-python3,rlm_python3,))
-$(eval $(call BuildPlugin,freeradius3-mod-radutmp,rlm_radutmp,))
-$(eval $(call BuildPlugin,freeradius3-mod-realm,rlm_realm,))
-$(eval $(call BuildPlugin,freeradius3-mod-redis,rlm_redis,))
-$(eval $(call BuildPlugin,freeradius3-mod-rediswho,rlm_rediswho,))
-$(eval $(call BuildPlugin,freeradius3-mod-replicate,rlm_replicate,))
-$(eval $(call BuildPlugin,freeradius3-mod-rest,rlm_rest,))
-$(eval $(call BuildPlugin,freeradius3-mod-soh,rlm_soh,))
-$(eval $(call BuildPlugin,freeradius3-mod-sometimes,rlm_sometimes,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql,rlm_sql,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql-map,rlm_sql_map,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql-mysql,rlm_sql_mysql,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql-null,rlm_sql_null,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql-postgresql,rlm_sql_postgresql,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql-sqlite,rlm_sql_sqlite,))
-$(eval $(call BuildPlugin,freeradius3-mod-sql-unixodbc,rlm_sql_unixodbc,))
-$(eval $(call BuildPlugin,freeradius3-mod-sqlcounter,rlm_sqlcounter,))
-$(eval $(call BuildPlugin,freeradius3-mod-sqlippool,rlm_sqlippool,))
-$(eval $(call BuildPlugin,freeradius3-mod-totp,rlm_totp,))
-$(eval $(call BuildPlugin,freeradius3-mod-unbound,rlm_unbound,))
-$(eval $(call BuildPlugin,freeradius3-mod-unix,rlm_unix,))
-$(eval $(call BuildPlugin,freeradius3-mod-unpack,rlm_unpack,))
-$(eval $(call BuildPlugin,freeradius3-mod-utf8,rlm_utf8,))
-$(eval $(call BuildPlugin,freeradius3-mod-wimax,rlm_wimax,))
-$(eval $(call BuildPlugin,freeradius3-mod-yubikey,rlm_yubikey,))
-$(eval $(call BuildPackage,freeradius3-utils))
+.PHONY: tar
+tar: freeradius-server-$(PKG_VERSION).tar.gz
+
+#
+#	Build a debian package
+#
+.PHONY: deb
+deb:
+	@if ! which fakeroot; then \
+		if ! which apt-get; then \
+		  echo "'make deb' only works on debian systems" ; \
+		  exit 1; \
+		fi ; \
+		echo "Please run 'apt-get install build-essential' "; \
+		exit 1; \
+	fi
+	EMAIL="packages@freeradius.org" fakeroot dch -b -v$(PKG_VERSION) ""
+	fakeroot debian/rules debian/control # Clean
+	fakeroot dpkg-buildpackage -b -uc
+
+.PHONY: rpm
+rpmbuild/SOURCES/freeradius-server-$(PKG_VERSION).tar.bz2: freeradius-server-$(PKG_VERSION).tar.bz2
+	@mkdir -p $(addprefix rpmbuild/,SOURCES SPECS BUILD RPMS SRPMS BUILDROOT)
+	@for file in `awk '/^Source...:/ {print $$2}' redhat/freeradius.spec` ; do cp redhat/$$file rpmbuild/SOURCES/$$file ; done
+	@cp $< $@
+
+rpm: rpmbuild/SOURCES/freeradius-server-$(PKG_VERSION).tar.bz2
+	@if ! $(SUDO) yum-builddep ${YUM_BUILDDEP_FLAGS} -q -C --assumeno redhat/freeradius.spec 1> rpmbuild/builddep.log 2>&1; then \
+		echo "ERROR: Required dependencies not found, install them with: yum-builddep redhat/freeradius.spec"; \
+		cat rpmbuild/builddep.log; \
+		exit 1; \
+	fi
+	@cwd=`pwd` && cd redhat && QA_RPATHS=0x0003 rpmbuild --define "_topdir $$cwd/rpmbuild" --define "version $(PKG_VERSION)" -bb $(RPMBUILD_FLAGS) freeradius.spec
+
+# Developer checks
+.PHONY: warnings
+warnings:
+	@(make clean all 2>&1) | egrep -v '^/|deprecated|^In file included|: In function|   from |^HEADER|^CC|^LINK|^LN' > warnings.txt
+	@wc -l warnings.txt
+
+#
+#  Ensure we're using tabs in the configuration files,
+#  and remove trailing whitespace in source files.
+#
+.PHONY: whitespace
+whitespace:
+	@for x in $$(git ls-files raddb/ src/); do unexpand $$x > $$x.bak; cp $$x.bak $$x; rm -f $$x.bak;done
+	@perl -p -i -e 'trim' $$(git ls-files src/)
+
+#
+#  Include the crossbuild make file only if we're cross building
+#
+ifneq "$(findstring crossbuild,$(MAKECMDGOALS))" ""
+  include scripts/docker/crossbuild/crossbuild.mk
+endif
+
+#
+#  Clean gcov files, too.
+#
+clean: clean.coverage
+.PHONY: clean.coverage
+clean.coverage:
+	@rm -f ${BUILD_DIR}/radiusd.info $(find ${BUILD_DIR} -name "*.gcda" -print)
