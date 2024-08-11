@@ -22,7 +22,6 @@
  *
  * @copyright 2020 Arran Cudbard-Bell (a.cudbardb@freeradius.org)
  */
-#include <gnumake.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

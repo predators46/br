@@ -32,7 +32,6 @@ RCSID("$Id: f125d9aa2f6de7ee9ad575e2caee3b891b7df64a $")
 #include <errno.h>
 #include <dlfcn.h>
 #include <unistd.h>
-#include <gnumake.h>
 
 #include "log.h"
 
