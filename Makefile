@@ -160,7 +160,7 @@ build/autoconf.mk: src/include/autoconf.h
           endif
 
           ifdef BUILD_MAKE_LIBS
-            define n
+            define y
           endef
           $(info $(subst CC,$nCC,$(shell $(MAKE) VERBOSE=$(VERBOSE) libfreeradius-make-dlopen.${BUILD_LIB_EXT} libfreeradius-make-version.${BUILD_LIB_EXT} libfreeradius-make-util.${BUILD_LIB_EXT})))
         endif
